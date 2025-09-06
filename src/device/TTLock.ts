@@ -32,6 +32,21 @@ export interface TTLock {
   on(event: "scanFRProgress", listener: (lock: TTLock) => void): this;
 }
 
+// fix toJSON
+function getCircularReplacer() {
+  const seen = new WeakSet();
+  return (key : any, value : any) => {
+      if (typeof value === "object" && value !== null) {
+           if (seen.has(value)) {
+              return;
+          }
+           seen.add(value);
+      }
+      return value;
+  };
+}
+
+
 export class TTLock extends TTLockApi implements TTLock {
   private connected: boolean;
   private skipDataRead: boolean = false;
@@ -1489,7 +1504,7 @@ export class TTLock extends TTLockApi implements TTLock {
     if (asObject) {
       return json;
     } else {
-      return JSON.stringify(json);
+      return JSON.stringify(json,getCircularReplacer());
     }
   }
 }
